@@ -1,0 +1,41 @@
+Word Count Application in Scala
+================================
+
+SparkCount.txt file
+-------------------
+Dear Bear River
+Car Car River
+Deer Car Bear
+Dear Deer River
+
+
+========================================
+SCALA (Spark Shell)
+========================================
+
+   cd /spark-3.5.2-bin-hadoop3/bin
+
+  ./spark-shell
+
+
+
+    val rdd= spark.sparkContext.textFile("file:///home/hadoop/Desktop/Sparkcount.txt")
+
+    rdd.collect()
+
+    val rdd1 = rdd.flatMap(x => x.split(" "))
+
+    rdd1.collect()
+
+    val rdd2 = rdd1.map( x => (x,1))
+
+    rdd2.collect()
+
+    val rdd3 = rdd2.reduceByKey( (a,b) => a+b)
+
+    rdd3.collect()
+
+    rdd3.toDF("word", "count").show()
+
+
+

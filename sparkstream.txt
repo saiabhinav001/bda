@@ -1,0 +1,60 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, sum
+from pyspark.sql.types import StructType, StructField, IntegerType, DoubleType
+
+# Step 1: Initialize Spark Session
+spark = SparkSession.builder \
+    .appName("RetailStoreStreaming") \
+    .config("spark.ui.showConsoleProgress", "false") \
+    .getOrCreate()
+
+spark.sparkContext.setLogLevel("ERROR")
+
+
+schema = StructType([
+    StructField("ProductID", IntegerType(), True),
+    StructField("Amount", DoubleType(), True)
+])
+
+
+input_path = "/home/hadoop/spark_input"
+retail_stream_df = spark \
+    .readStream \
+    .format("csv") \
+    .option("header", "true") \
+    .schema(schema) \
+    .load(input_path)
+
+# Step 3: Process Data (Aggregate Total Sales per Product)
+processed_df = retail_stream_df.groupBy("ProductID").agg(sum("Amount").alias("TotalSales"))
+
+# Step 3: Process Data (Aggregate Total Sales per Product)
+processed_df = retail_stream_df.groupBy("ProductID").agg(sum("Amount").alias("TotalSales"))
+
+# Step 4: Write Stream Output to Console
+query = processed_df.writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+
+# Await Termination
+query.awaitTermination()
+
+
+# file1.csv
+ProductID,Amount
+101,250.0
+102,180.5
+103,320.0
+101,100.0
+102,220.0
+104,150.0
+
+# Go to Home Directory
+ 
+@ubuntu22:~/home/hadoop: cd ..
+
+@ubuntu22:~ cd /spark-3.5.2-bin-hadoop3/bin
+
+# Step-3 Run using the following command
+# hadoop@ubuntu22:~/spark-3.5.2-bin-hadoop3/bin$ ./spark-submit /home/hadoop/spark_input/sparkstream.py

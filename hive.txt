@@ -1,0 +1,37 @@
+
+start-all.sh
+
+
+jps
+
+hive
+
+
+CREATE TABLE temperature_data (full_date STRING, zip INT, temperature INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+
+SHOW TABLES;
+
+
+DESCRIBE temperature_data;
+
+
+LOAD DATA LOCAL INPATH '/home/hadoop/temperature_data.txt' OVERWRITE INTO TABLE temperature_data;
+
+
+SELECT * FROM temperature_data;
+
+
+SELECT full_date, MAX(temperature)
+FROM temperature_data
+WHERE temperature>29
+GROUP BY full_date;
+
+#temperature_data.txt
+19-01-2024,500089,25
+20-01-2024,500012,32
+21-01-2024,500014,30
+22-01-2024,500012,29
+23-01-2023,500013,29

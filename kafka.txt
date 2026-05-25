@@ -1,0 +1,154 @@
+# ================================
+# Kafka Installation & Application
+# ================================
+
+# 1. Update System
+sudo apt-get update
+
+# 2. Install SSH
+sudo apt-get install openssh-client openssh-server -y
+sudo service ssh restart
+ssh localhost
+
+# 3. Install Java
+sudo apt update
+sudo apt install default-jdk -y
+java -version
+
+# 4. Create User (Optional)
+sudo adduser hadoop
+su - hadoop
+
+# 5. Download Kafka
+wget https://archive.apache.org/dist/kafka/3.2.1/kafka_2.12-3.2.1.tgz
+
+# 6. Extract Kafka
+tar -xzf kafka_2.12-3.2.1.tgz
+
+# 7. Move Kafka & Create Symlink
+sudo mv kafka_2.12-3.2.1 /home/
+sudo ln -s /home/kafka_2.12-3.2.1 /home/hadoop/kafka
+
+# 8. Install Zookeeper
+sudo apt-get install -y zookeeperd
+
+# ================================
+# Zookeeper Service File
+# ================================
+
+sudo tee /etc/systemd/system/zookeeper.service > /dev/null <<EOF
+[Unit]
+Description=Apache Zookeeper server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/hadoop/kafka/bin/zookeeper-server-start.sh /home/hadoop/kafka/config/zookeeper.properties
+ExecStop=/home/hadoop/kafka/bin/zookeeper-server-stop.sh
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# ================================
+# Kafka Service File
+# ================================
+
+sudo tee /etc/systemd/system/kafka.service > /dev/null <<EOF
+[Unit]
+Description=Apache Kafka Server
+Requires=zookeeper.service
+
+[Service]
+Type=simple
+Environment="JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
+ExecStart=/home/hadoop/kafka/bin/kafka-server-start.sh /home/hadoop/kafka/config/server.properties
+ExecStop=/home/hadoop/kafka/bin/kafka-server-stop.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# ================================
+# Start Services
+# ================================
+
+sudo systemctl daemon-reload
+
+sudo systemctl enable zookeeper
+sudo systemctl start zookeeper
+sudo systemctl status zookeeper
+
+sudo systemctl enable kafka
+sudo systemctl start kafka
+sudo systemctl status kafka
+
+# ================================
+# Verify Kafka Files
+# ================================
+
+ls /home/hadoop/kafka/bin
+
+# ================================
+# Create Topic
+# ================================
+
+cd ~/kafka
+
+bin/kafka-topics.sh --create \
+--topic test-topic \
+--bootstrap-server localhost:9092 \
+--partitions 1 \
+--replication-factor 1
+
+# ================================
+# Producer
+# ================================
+
+bin/kafka-console-producer.sh \
+--topic test-topic \
+--bootstrap-server localhost:9092
+
+# ================================
+# Consumer
+# ================================
+
+cd ~/kafka
+
+bin/kafka-console-consumer.sh \
+--topic test-topic \
+--from-beginning \
+--bootstrap-server localhost:9092
+
+# ================================
+# Final Flow
+# ================================
+
+# 1. Install Java and SSH
+# 2. Download and extract Kafka
+# 3. Install Zookeeper
+# 4. Configure services
+# 5. Start services
+# 6. Create topic
+# 7. Use producer and consumer
+
+# ================================
+# Common Errors
+# ================================
+
+# 1. 404 error         → use archive.apache.org
+# 2. File not found    → check using ls command
+# 3. Permission denied → use sudo
+# 4. Zookeeper error   → check paths correctly
+# 5. Kafka not found   → use find command
+
+# ================================
+# Viva Points
+# ================================
+
+# 1. Kafka      → Distributed streaming platform
+# 2. Zookeeper  → Coordination service
+# 3. Topic      → Message category
+# 4. Producer   → Sends data
+# 5. Consumer   → Reads data

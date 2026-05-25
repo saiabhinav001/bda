@@ -1,0 +1,35 @@
+# Run bash
+bash
+
+# Start Hadoop services
+start-all.sh
+
+# Check running Hadoop processes
+jps
+
+# List files in HDFS directory
+hdfs dfs -ls /bda
+
+# Create directory in HDFS
+hdfs dfs -mkdir /bda
+
+# Remove file from HDFS
+hdfs dfs -rm /bda/file.txt
+
+# View file content
+hdfs dfs -cat /bda/file.txt
+
+# Upload file to HDFS directory
+hdfs dfs -put file.txt /bda
+
+# Create a file in HDFS (optional)
+hdfs dfs -touchz /bda/handsome.txt
+
+# Create a sample file locally
+echo "HelloWorld" > handsome.txt
+
+# Upload the created file to HDFS
+hdfs dfs -put handsome.txt /bda/handsome.txt
+
+# List files again
+hdfs dfs -ls /bda

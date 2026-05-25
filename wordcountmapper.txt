@@ -1,0 +1,64 @@
+# Start Hadoop
+start-all.sh
+jps
+
+# Create working directory
+mkdir ~/bigdata
+cd ~/bigdata
+
+# Create mapper code
+nano wcmap.py
+
+#!/usr/bin/env python3
+import sys
+import re
+
+for line in sys.stdin:
+    words = re.findall(r'\w+', line.lower())
+    for word in words:
+        print(f"{word}\t1")
+
+# Create reducer code
+nano wcreduce.py
+
+import sys
+from itertools import groupby
+
+for word, group in groupby(sys.stdin, lambda x: x.split('\t')[0]):
+    total = sum(int(line.split('\t')[1]) for line in group)
+    print(f"{word}\t{total}")
+
+# Give execute permission
+chmod +x wcmap.py wcreduce.py
+
+# Create input file
+nano input.txt
+
+# Test locally
+cat input.txt | python3 wcmap.py | sort | python3 wcreduce.py
+
+# Expected output example
+# big 1
+# data 1
+# Hadoop 3
+# mapreduce 1
+
+# Create HDFS input directory
+hdfs dfs -mkdir -p /user/hadoop/wc/input
+
+# Put input file into HDFS
+hdfs dfs -put input.txt /user/hadoop/wc/input
+
+# Run the jar file
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar \
+-file wcmap.py -mapper "python3 wcmap.py" \
+-file wcreduce.py -reducer "python3 wcreduce.py" \
+-input /user/hadoop/wc/input \
+-output /wc/output
+
+# View output
+hdfs dfs -cat /wc/output/part-00000
+
+# Open output in browser
+# http://localhost:9870
+# Browse -> search output directory -> download output file

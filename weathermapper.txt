@@ -1,0 +1,81 @@
+# Start Hadoop
+start-all.sh
+jps
+
+# Create working directory
+mkdir ~/bigdata
+cd ~/bigdata
+
+# Create mapper code
+nano wemap.py
+
+#!/usr/bin/env python3
+import sys
+
+for line in sys.stdin:
+    line = line.strip()
+    year, temp_max, temp_min = map(int, line.split(","))
+    print(f"{year}\t{temp_max}\t{temp_min}")
+
+
+# Create reducer code
+nano wered.py
+
+#!/usr/bin/env python3
+import sys
+
+dmax = {}
+dmin = {}
+
+for line in sys.stdin:
+    year, tmax, tmin = map(int, line.strip().split("\t"))
+
+    if year not in dmax:
+        dmax[year] = tmax
+        dmin[year] = tmin
+    else:
+        dmax[year] = max(dmax[year], tmax)
+        dmin[year] = min(dmin[year], tmin)
+
+for year in dmax:
+    print(f"Year: {year}, Max Temp: {dmax[year]}, Min Temp: {dmin[year]}")
+
+
+# Give execute permission
+chmod +x wemap.py wered.py
+
+# Create input file
+nano input.csv
+
+# Example data
+# 2000,35,22
+# 2000,33,20
+# 2000,36,24
+# .... (30 rows)
+
+# Test locally
+cat input.csv | python3 wemap.py | python3 wered.py
+
+
+# Create HDFS input directory
+hdfs dfs -mkdir -p /user/hadoop/weather/input
+
+# Put input file into HDFS
+hdfs dfs -put input.csv /user/hadoop/weather/input
+
+
+# Run the jar file
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar \
+-file wemap.py -mapper "python3 wemap.py" \
+-file wered.py -reducer "python3 wered.py" \
+-input /weather/input \
+-output /weather/output
+
+
+# View output
+hdfs dfs -cat /weather/output/part-00000
+
+
+# Open output in browser
+# http://localhost:9870
+# Browse -> search output directory -> download output file

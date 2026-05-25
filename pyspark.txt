@@ -1,0 +1,28 @@
+SparkCount.txt file
+-------------------
+Dear Bear River
+Car Car River
+Deer Car Bear
+Dear Deer River
+
+
+========================================
+PySpark
+========================================
+
+cd  /spark-3.5.2-bin-hadoop3/bin
+
+    ./pyspark
+
+
+    input_data = sc.textFile('/home/hadoop/Desktop/Sparkcount.txt')
+
+    word_counts = input_data.flatMap(lambda line: line.split(" "))
+
+    word_counts1 = word_counts.map(lambda word: (word, 1))
+
+    word_counts1.collect()
+
+    final_counts = word_counts1.reduceByKey(lambda a,b: a+b)
+
+    final_counts.collect()

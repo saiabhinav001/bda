@@ -1,0 +1,42 @@
+# Start Hadoop
+start-all.sh
+jps
+
+# Create working directory
+mkdir ~/bigdata
+cd ~/bigdata
+
+# Create dataset file
+nano weather.txt
+
+2022 35 20
+2023 33 15
+2020 34 16
+2021 38 18
+
+# Start Pig in local mode
+pig -x local
+
+# Load data
+weather_data = LOAD 'weather.txt' USING PigStorage(' ') AS (year:int, maxtemp:int, mintemp:int);
+
+# Display loaded data
+DUMP weather_data;
+
+# Filter records where max temperature > 35
+filtered_weather = FILTER weather_data BY maxtemp > 35;
+
+# Display filtered data
+DUMP filtered_weather;
+
+# Group data by year
+grouped_weather = GROUP weather_data BY year;
+
+# Display grouped data
+DUMP grouped_weather;
+
+# Count records per year
+grouped_weather_count = FOREACH grouped_weather GENERATE group AS year, COUNT(weather_data) AS record_count;
+
+# Display count result
+DUMP grouped_weather_count;
